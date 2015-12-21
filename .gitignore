@@ -2,3 +2,6 @@
 .project
 .pydevproject
 reporting_api/conf/apiv1.ini
+/.eggs/
+/reporting_api.egg-info/
+/.tox/

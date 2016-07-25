@@ -99,10 +99,12 @@ class APIv1App(APIVersion):
         table_name = args['report']
         del args['report']
         server_modified = DBQueries.get_table_lastupdate(dbconn, table_name)
-        headers = [(
-            'Last-Modified',
-            format_date_time(mktime(server_modified.timetuple()))
-        )]
+        headers = []
+        if server_modified:
+            headers.append((
+                'Last-Modified',
+                format_date_time(mktime(server_modified.timetuple()))
+            ))
         # Handle conditional requests
         if not args:
             if (

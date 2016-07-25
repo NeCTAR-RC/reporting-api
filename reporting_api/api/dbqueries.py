@@ -3,7 +3,7 @@ Encapsulates a set of pre-defined database queries,
 gathering all SQL into one place.
 """
 
-from datetime import datetime, tzinfo, timedelta
+from datetime import tzinfo, timedelta
 from reporting_api.common.dbconn import ResultSet, ResultSetSlice
 
 
@@ -94,13 +94,9 @@ class DBQueries(object):
         rows = cls.get_table_lastupdates(dbconn, [table_name])
         try:
             row = iter(rows).next()
+            return row.replace(tzinfo=UTC())
         except StopIteration:
-            """
-            Despite the name, utcfromtimestamp returns a 'naive'
-            datetime lacking any timezone, UTC or otherwise.
-            """
-            row = datetime.utcfromtimestamp(0)
-        return row.replace(tzinfo=UTC())
+            return None
 
     @classmethod
     def get_table_list(cls, dbconn):

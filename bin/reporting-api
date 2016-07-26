@@ -21,6 +21,8 @@ def parse_args():
                         help="Specify the file to log to")
     parser.add_argument('--pidfile', action='store', required=False,
                         default='/var/run/reporting-api.pid')
+    parser.add_argument('--loglevel', action='store', required=False,
+                        help='specify log level', default='warning')
     return parser.parse_args()
 
 
@@ -46,9 +48,14 @@ class Handler(object):
 
 if __name__ == '__main__':
     args = parse_args()
-    logging.basicConfig(
-        filename=args.logfile, level=logging.INFO
-    )
+    loglevel = getattr(logging, args.loglevel.upper())
+    log_config = {
+        'format': "%(asctime)s %(levelname)s: %(message)s",
+        'datefmt': '%Y-%m-%d %X',
+        'filename': args.logfile,
+        'level': loglevel,
+    }
+    logging.basicConfig(**log_config)
     handler = Handler()
     signal.signal(signal.SIGTERM, handler.term_handler)
     signal.signal(signal.SIGINT, handler.term_handler)

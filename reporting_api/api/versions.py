@@ -8,9 +8,7 @@ from reporting_api.common.application import Application
 
 
 class VersionsApp(Application):
-
-    """
-    A WSGI application which lists available versions
+    """A WSGI application which lists available versions
     of APIs understood by another WSGI application.
     """
 
@@ -18,8 +16,7 @@ class VersionsApp(Application):
         super(VersionsApp, self).__init__(None)
 
     def operation_api_version_list(self, req, params):
-        """
-        Return a list of available API versions.
+        """Return a list of available API versions.
         """
         return (
             [
@@ -30,15 +27,13 @@ class VersionsApp(Application):
         )
 
     def operation_api_version_details(self, req, params):
-        """
-        Return details of one API version.
+        """Return details of one API version.
         FIXME: This calls an abstract base class method.
         """
         return (APIVersion.api_version_detail(req, params), None)
 
 
 def app_factory(global_config, **settings):
-    """
-    A factory function which returns WSGI version-list applications.
+    """A factory function which returns WSGI version-list applications.
     """
     return VersionsApp()

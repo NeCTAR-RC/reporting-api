@@ -1,27 +1,24 @@
-"""
-Encapsulates a set of pre-defined database queries,
+"""Encapsulates a set of pre-defined database queries,
 gathering all SQL into one place.
 """
 
-from datetime import tzinfo, timedelta
-from reporting_api.common.dbconn import ResultSet, ResultSetSlice
+from datetime import timedelta
+from datetime import tzinfo
+from reporting_api.common.dbconn import ResultSet
+from reporting_api.common.dbconn import ResultSetSlice
 
 
 class UTC(tzinfo):
-
-    """
-    A timezone representing Coordinated Universal Time (UTC).
+    """A timezone representing Coordinated Universal Time (UTC).
     """
 
     def utcoffset(self, dt):
-        """
-        UTC is always 0 offset from UTC.
+        """UTC is always 0 offset from UTC.
         """
         return timedelta(0)
 
     def dst(self, dt):
-        """
-        UTC never has a Daylight Savings Time offset.
+        """UTC never has a Daylight Savings Time offset.
         """
         return timedelta(0)
 
@@ -30,9 +27,7 @@ class UTC(tzinfo):
 
 
 class DBQueries(object):
-
-    """
-    Holds a set of canned database queries.
+    """Holds a set of canned database queries.
     """
 
     QUERY_SHOW_TABLES = 'SHOW TABLES;'
@@ -42,8 +37,7 @@ class DBQueries(object):
 
     @classmethod
     def get_tables_comments(cls, dbconn, dbname, table_names):
-        """
-        Return an iterator over the SQL92 table comments for the given tables.
+        """Return an iterator over the SQL92 table comments for the given tables.
         """
         # In this query, schema and table names are literals,
         # so can be parameters
@@ -65,31 +59,33 @@ class DBQueries(object):
 
     @classmethod
     def get_table_comment(cls, dbconn, dbname, table_name):
-        """
-        Obtain a single table's SQL92 table comment.
+        """Obtain a single table's SQL92 table comment.
         """
         comments = cls.get_tables_comments(dbconn, dbname, [table_name])
         return iter(comments).next()
 
     @classmethod
     def get_table_lastupdates(cls, dbconn, table_names):
-        """
-        Return an iterator over the last update times for the given tables.
+        """Return an iterator over the last update times for the given tables.
         This is looked for in an optional table named 'metadata'.
         FIXME: Remove this knowledge about the underlying schema.
         """
         # In this query, table names are literals, so can be parameters
-        query = "SELECT " + dbconn.escape_identifier(cls.METADATA_LAST_UPDATE_COLUMN) \
-            + " FROM " + dbconn.escape_identifier(cls.METADATA_TABLE) \
-            + " WHERE " + dbconn.escape_identifier(cls.METADATA_TABLE_NAME_COLUMN) \
-            + " IN (" + ",".join(['%s'] * len(table_names)) + ");"
+        query = """SELECT %(last_update)s FROM %(table)s WHERE %(column)s"
+                   IN %(table_names)s""" % dict(
+                last_update=dbconn.escape_identifier(
+                    cls.METADATA_LAST_UPDATE_COLUMN),
+                table=dbconn.escape_identifier(
+                    cls.METADATA_TABLE),
+                column=dbconn.escape_identifier(
+                    cls.METADATA_TABLE_NAME_COLUMN),
+                table_names="(" + ",".join(['%s'] * len(table_names)) + ");")
         cursor = dbconn.execute(query, False, table_names)
         return ResultSetSlice(cursor, 0)
 
     @classmethod
     def get_table_lastupdate(cls, dbconn, table_name):
-        """
-        Obtain a single table's last update time.
+        """Obtain a single table's last update time.
         """
         rows = cls.get_table_lastupdates(dbconn, [table_name])
         try:
@@ -100,8 +96,7 @@ class DBQueries(object):
 
     @classmethod
     def get_table_list(cls, dbconn):
-        """
-        Return an iterator over names of available tables.
+        """Return an iterator over names of available tables.
         """
         query = cls.QUERY_SHOW_TABLES
         cursor = dbconn.execute(query, False)
@@ -109,8 +104,7 @@ class DBQueries(object):
 
     @classmethod
     def filter_table(cls, dbconn, table_name, filter_args):
-        """
-        Return an iterator over the records in a resultset
+        """Return an iterator over the records in a resultset
         selecting all columns from the given-named table.
         The filter_args are ANDed together then used as a WHERE criterion.
         """

@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
-"""
-Map URLs to Swagger operations and therefore to Python methods.
+"""Map URLs to Swagger operations and therefore to Python methods.
 """
 
 import json
@@ -16,9 +15,7 @@ from swaggerapp.specification import SwaggerSpecification
 # pylint: disable=R0903
 
 class SwaggerMiddleware(object):
-
-    """
-    A WSGI URL router middleware that automatically configures itself
+    """A WSGI URL router middleware that automatically configures itself
     using a set of Swagger JSON API specifications.
     """
 
@@ -27,8 +24,7 @@ class SwaggerMiddleware(object):
         self.application = application
 
     def _decorate_environment(self, environ):
-        """
-        Given the request environment, using the loaded specification,
+        """Given the request environment, using the loaded specification,
         decorate the request environment with additional information
         about the request found by examining the specification.
 
@@ -72,13 +68,11 @@ class SwaggerMiddleware(object):
 
 
 def factory(config, **settings):
-    """
-    Function that returns a function that returns
+    """Function that returns a function that returns
     WSGI filters.
     """
     def filter(app):
-        """
-        Factory method that produces WSGI filters.
+        """Factory method that produces WSGI filters.
         """
         config.update(settings)
         swagger_files = config.get('swagger_json')
@@ -92,6 +86,7 @@ def factory(config, **settings):
         return SwaggerMiddleware(app, specs)
     return filter
 
+
 if __name__ == '__main__':
     from reporting.api.versions import VersionsApp
     APP = VersionsApp()
@@ -101,4 +96,4 @@ if __name__ == '__main__':
         )
     )
     MIDDLEWARE = SwaggerMiddleware(APP, (SPEC))
-    print MIDDLEWARE
+    print(MIDDLEWARE)

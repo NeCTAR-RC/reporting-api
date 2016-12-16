@@ -4,15 +4,14 @@
 Encode values suitable for output.
 """
 
-import json
 from datetime import datetime
-from unittest import main as test_main, TestCase
+import json
+from unittest import main as test_main
+from unittest import TestCase
 
 
 class JSONStreamingEncoder(object):
-
-    """
-    This class wraps the Python 'json' module in code capable of handling
+    """This class wraps the Python 'json' module in code capable of handling
     potentially-large Python objects without holding the entire JSON output
     in memory.
     It also permits explicit choice of the type of top-level JSON value -
@@ -23,30 +22,26 @@ class JSONStreamingEncoder(object):
     """
 
     def __init__(self, value=None):
-        """
-        Construct a encoder instance, optionally passing in a Python value
+        """Construct a encoder instance, optionally passing in a Python value
         to be encoded.
         """
         self.terminator = ''
         self.value = value
 
     def __iter__(self):
-        """
-        Iterate over chunks of the JSON encoding of the Python value passed in
+        """Iterate over chunks of the JSON encoding of the Python value passed in
         at construction time (if any).
         """
         return self.to_json(self.value)
 
     def start_array(self):
-        """
-        Return the string that begins a JSON array.
+        """Return the string that begins a JSON array.
         """
         self.terminator = ']' + self.terminator
         return '['
 
     def end_array(self):
-        """
-        Return the string that terminates a JSON array.
+        """Return the string that terminates a JSON array.
         """
         if self.terminator.startswith(']'):
             self.terminator = self.terminator[1:]
@@ -57,15 +52,13 @@ class JSONStreamingEncoder(object):
             )
 
     def start_object(self):
-        """
-        Return the string that begins a JSON object.
+        """Return the string that begins a JSON object.
         """
         self.terminator = '}' + self.terminator
         return '{'
 
     def end_object(self):
-        """
-        Return the string that terminates a JSON object.
+        """Return the string that terminates a JSON object.
         """
         if self.terminator.startswith('}'):
             self.terminator = self.terminator[1:]
@@ -77,8 +70,7 @@ class JSONStreamingEncoder(object):
 
     @staticmethod
     def _make_object_generator(value):
-        """
-        Given a Python value, return an iterator over tuples,
+        """Given a Python value, return an iterator over tuples,
         so that each tuple can become a name: value entry
         in the containing JSON object.
         """
@@ -99,8 +91,7 @@ class JSONStreamingEncoder(object):
 
     @staticmethod
     def _make_array_generator(value):
-        """
-        Given a Python value, return an iterator over elements,
+        """Given a Python value, return an iterator over elements,
         so that each element can become an entry
         in the containing JSON array.
         """
@@ -113,8 +104,7 @@ class JSONStreamingEncoder(object):
                 yield entry
 
     def _to_array(self, value):
-        """
-        Generator function which converts the given Python value
+        """Generator function which converts the given Python value
         to a JSON array, converting it as necessary.
         """
         first = True
@@ -131,8 +121,7 @@ class JSONStreamingEncoder(object):
         yield self.end_array()
 
     def _to_object(self, value):
-        """
-        Generator function which converts the given Python value
+        """Generator function which converts the given Python value
         to a JSON object, converting it as necessary.
         """
         first = True
@@ -152,8 +141,7 @@ class JSONStreamingEncoder(object):
         yield self.end_object()
 
     def to_json(self, value, array_not_object=None):
-        """
-        A generator which successively yields chunks of JSON-format data
+        """A generator which successively yields chunks of JSON-format data
         encoding the given value.
         If array_not_object is True, generate a JSON array.
         If array_not_object is False, generate a JSON object.
@@ -187,8 +175,7 @@ class JSONStreamingEncoder(object):
                 yield chunk
 
 
-"""
-Pairs of input data and expected output data for unit testing.
+"""Pairs of input data and expected output data for unit testing.
 """
 TEST_INPUT_DATETIME = datetime(1999, 12, 31, 23, 59, 59, 999999)
 TEST_OUTPUT_DATETIME = '"1999-12-31T23:59:59.999999"'
@@ -263,8 +250,7 @@ TEST_OUTPUT_DICT_OBJECT = (
 
 
 def gen():
-    """
-    An example generator function.
+    """An example generator function.
     """
     yield 'first_value'
     yield 'second_value'
@@ -273,6 +259,8 @@ def gen():
     # If these are of length two, they will be treated as name/value pairs
     # when being forcibly converted to a JSON object, which looks strange.
     yield TEST_INPUT_SUBARRAY
+
+
 TEST_OUTPUT_GEN_ARRAY = (
     '['
     '"first_value",'
@@ -288,9 +276,7 @@ TEST_OUTPUT_GEN_ARRAY = (
 # It is not a problem to have too many unit tests.
 # pylint: disable=R0904
 class JSONTestCase(TestCase):
-
-    """
-    Unit tests for the streaming JSON encoder.
+    """Unit tests for the streaming JSON encoder.
     """
 
     def setUp(self):
@@ -301,8 +287,7 @@ class JSONTestCase(TestCase):
     # pylint: disable=C0103
 
     def testListToAuto(self):
-        """
-        Test converting a Python list into a JSON value.
+        """Test converting a Python list into a JSON value.
         Python lists automatically become JSON arrays.
         """
         test_input = TEST_INPUT_LIST
@@ -311,8 +296,7 @@ class JSONTestCase(TestCase):
         self.assertEqual(test_output, TEST_OUTPUT_LIST_ARRAY)
 
     def testListToArray(self):
-        """
-        Test converting a Python list into a JSON array.
+        """Test converting a Python list into a JSON array.
         """
         test_input = TEST_INPUT_LIST
         test_output_iter = self.enc.to_json(test_input, True)
@@ -320,8 +304,7 @@ class JSONTestCase(TestCase):
         self.assertEqual(test_output, TEST_OUTPUT_LIST_ARRAY)
 
     def testListToObject(self):
-        """
-        Test converting a Python list into a JSON object.
+        """Test converting a Python list into a JSON object.
         """
         test_input = TEST_INPUT_LIST
         test_output_iter = self.enc.to_json(test_input, False)
@@ -329,8 +312,7 @@ class JSONTestCase(TestCase):
         self.assertEqual(test_output, TEST_OUTPUT_LIST_OBJECT)
 
     def testDictToAuto(self):
-        """
-        Test converting a Python dictionary into a JSON value.
+        """Test converting a Python dictionary into a JSON value.
         Python dictionaries automatically become JSON objects.
         """
         test_input = TEST_INPUT_DICT
@@ -339,8 +321,7 @@ class JSONTestCase(TestCase):
         self.assertEqual(test_output, TEST_OUTPUT_DICT_OBJECT)
 
     def testDictToArray(self):
-        """
-        Test converting a Python dictionary into a JSON array.
+        """Test converting a Python dictionary into a JSON array.
         """
         test_input = TEST_INPUT_DICT
         test_output_iter = self.enc.to_json(test_input, True)
@@ -348,8 +329,7 @@ class JSONTestCase(TestCase):
         self.assertEqual(test_output, TEST_OUTPUT_DICT_ARRAY)
 
     def testDictToObject(self):
-        """
-        Test converting a Python dictionary into a JSON object.
+        """Test converting a Python dictionary into a JSON object.
         """
         test_input = TEST_INPUT_DICT
         test_output_iter = self.enc.to_json(test_input, False)
@@ -357,8 +337,7 @@ class JSONTestCase(TestCase):
         self.assertEqual(test_output, TEST_OUTPUT_DICT_OBJECT)
 
     def testGenToAuto(self):
-        """
-        Test converting a Python generator into a JSON value.
+        """Test converting a Python generator into a JSON value.
         Python generators automatically become JSON arrays.
         """
         test_input = gen()
@@ -367,8 +346,7 @@ class JSONTestCase(TestCase):
         self.assertEqual(test_output, TEST_OUTPUT_GEN_ARRAY)
 
     def testGenToArray(self):
-        """
-        Test converting a Python generator into a JSON array.
+        """Test converting a Python generator into a JSON array.
         """
         test_input = gen()
         test_output_iter = self.enc.to_json(test_input)

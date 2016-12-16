@@ -3,18 +3,17 @@ OpenStack Reporting API version 1.
 """
 
 import ConfigParser
+from time import mktime
 import webob.exc
+from wsgiref.handlers import format_date_time
+
+from reporting_api.api.dbqueries import DBQueries
 from reporting_api.common.apiversion import APIVersion
 from reporting_api.common.dbconn import DBConnection
-from reporting_api.api.dbqueries import DBQueries
-from wsgiref.handlers import format_date_time
-from time import mktime
 
 
 class APIv1App(APIVersion):
-
-    """
-    Implements version 1 of the OpenStack Reporting API.
+    """Implements version 1 of the OpenStack Reporting API.
     """
 
     def __init__(self, configuration):
@@ -25,9 +24,8 @@ class APIv1App(APIVersion):
         self.dbpass = self.config.get('database', 'password')
 
     def _connect_db(self):
-        """
-        Return a new connection to the database.
-        TODO: Connection pooling.
+        """Return a new connection to the database.
+        TODO(sjjf): Connection pooling.
         """
         return DBConnection(
             host=self.dbhost,
@@ -42,27 +40,25 @@ class APIv1App(APIVersion):
 
     @classmethod
     def _get_links(cls):
-        # TODO: Obtain this from the Swagger specification(s)
+        # TODO(sjjf): Obtain this from the Swagger specification(s)
         return dict(
             reports='/v1/reports'
         )
 
     @classmethod
     def _get_report_links(cls, report):
-        """
-        Return a set of links to other resources linked to this resource.
+        """Return a set of links to other resources linked to this resource.
         The keys are the relationship of the other resource to this resource;
         the entries are the URLs of the other resources.
         This is intended to implement HATEOAS.
-        TODO: Obtain this from the Swagger specification(s).
+        TODO(sjjf): Obtain this from the Swagger specification(s).
         """
         return dict(
             self='/v1/reports/' + report
         )
 
     def _get_report_details(self, dbconn, report_name):
-        """
-        Return details about the given-named report.
+        """Return details about the given-named report.
         """
         return dict(
             name=report_name,
@@ -76,8 +72,7 @@ class APIv1App(APIVersion):
         )
 
     def operation_reports_list(self, req, args):
-        """
-        List available reports.
+        """List available reports.
         """
         dbconn = self._connect_db()
         report_name_iter = DBQueries.get_table_list(dbconn)
@@ -92,8 +87,7 @@ class APIv1App(APIVersion):
         ], None)
 
     def operation_report_result_set(self, req, args):
-        """
-        Run a report, generating a result set.
+        """Run a report, generating a result set.
         """
         dbconn = self._connect_db()
         table_name = args['report']
@@ -114,22 +108,17 @@ class APIv1App(APIVersion):
                 return (webob.exc.HTTPNotModified(), headers)
         try:
             result_set = DBQueries.filter_table(dbconn, table_name, args)
-            # Pylint warns about catch-all exception handlers like that below.
-            # The rationale is that this "prohibits the use of tailored
-            # responses" - but that is exactly what we are attempting to do.
-            # So just disable the warning.
-            # pylint: disable=W0702
-        except:
+        except Exception:
             # Don't leak information about the database
             return (webob.exc.HTTPBadRequest(), [])
         return (result_set, headers)
+
 
 APIVersion.version_classes.append(APIv1App)
 
 
 def app_factory(global_config, **local_config):
-    """
-    Factory function that returns APIv1 WSGI applications.
+    """Factory function that returns APIv1 WSGI applications.
     """
     global_config.update(local_config)
     config_file_name = global_config.get('config_file')

@@ -3,26 +3,15 @@ An Application which uses Keystone for authorisation using RBAC.
 """
 
 import ConfigParser
-import abc
-from reporting_api.common.application import Application
 from keystonemiddleware.auth_token import filter_factory as auth_filter_factory
+from reporting_api.common.application import Application
+import six
 
 
-# Pylint warns that the following class has too few public methods.
-# It is not intended to have many (or even any) public methods,
-# so this is not a problem, so the following comment silences the warning.
-# Apparently, pylint assumes (falsely) that a class without public methods
-# is being abused as a mere holder of data - but the below class is being
-# used as a holder of code, as is common accepted practice in OOP.
-# pylint: disable=R0903
-
+@six.add_metaclass
 class KeystoneApplication(Application):
-
+    """An Application which uses Keystone for authorisation using RBAC.
     """
-    An Application which uses Keystone for authorisation using RBAC.
-    """
-
-    __metaclass__ = abc.ABCMeta
 
     INI_SECTION = 'keystone_authtoken'
 
@@ -34,8 +23,7 @@ class KeystoneApplication(Application):
 
     @classmethod
     def _headers(cls):
-        """
-        Return a list of ('Header-Name', 'Header-Value') tuples,
+        """Return a list of ('Header-Name', 'Header-Value') tuples,
         which should be added as HTTP headers to every response.
 
         Our responses depend on whether or not correct authentication was
@@ -58,8 +46,7 @@ class KeystoneApplication(Application):
 
 
 def keystone_auth_filter_factory(global_config, **local_config):
-    """
-    A factory function which produces Keystone authentication
+    """A factory function which produces Keystone authentication
     WSGI filters.
     """
     global_config.update(local_config)

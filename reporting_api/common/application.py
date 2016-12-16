@@ -3,48 +3,36 @@ A WSGI application configured by an INI file,
 which responds to requests according to a Swagger API specification.
 """
 
-from webob import Request, Response
-import abc
+import logging
+import six
+from swaggerapp.encoder import JSONStreamingEncoder
+from swaggerapp.specification import SwaggerSpecification
+from urlparse import parse_qs
 import webob.dec
 import webob.exc
-from urlparse import parse_qs
-from swaggerapp.specification import SwaggerSpecification
-from swaggerapp.encoder import JSONStreamingEncoder
-import logging
+from webob import Request
+from webob import Response
 
 
-# Pylint warns that the following class has too few public methods.
-# It is not intended to have many (or even any) public methods,
-# so this is not a problem, so the following comment silences the warning.
-# Apparently, pylint assumes (falsely) that a class without public methods
-# is being abused as a mere holder of data - but the below class is being
-# used as a holder of code, as is common accepted practice in OOP.
-# pylint: disable=R0903
-
+@six.add_metaclass
 class Application(object):
-
-    """
-    Abstract base class for a WSGI application configured by an INI file
+    """Abstract base class for a WSGI application configured by an INI file
     which responds to requests according to a Swagger API specification.
     """
-
-    __metaclass__ = abc.ABCMeta
 
     def __init__(self, configuration):
         super(Application, self).__init__()
         self.config = configuration
 
     def _get_method(self, func_name):
-        """
-        Find and return the method with the given name on this object,
+        """Find and return the method with the given name on this object,
         or return None if no such method exists.
         """
         return getattr(self, func_name, None)
 
     @classmethod
     def _expected_response(cls, operation):
-        """
-        Given a Swagger operation, return the sole response.
+        """Given a Swagger operation, return the sole response.
         If the specification allows no responses, we cannot succeed,
         because HTTP requires a response to every request.
         If the specification allows multiple responses,
@@ -60,8 +48,7 @@ class Application(object):
 
     @classmethod
     def _expected_status(cls, req, operation):
-        """
-        Given a Swagger operation, return the expected status.
+        """Given a Swagger operation, return the expected status.
         This is the HTTP status that will be served in response
         to a request mapping to this operation.
         """
@@ -72,8 +59,7 @@ class Application(object):
 
     @classmethod
     def _expected_body(cls, operation):
-        """
-        Given a Swagger operation, return the expected body.
+        """Given a Swagger operation, return the expected body.
         This is the HTTP response body that will be served
         in response to a request mapping to this operation.
         """
@@ -81,8 +67,7 @@ class Application(object):
 
     @classmethod
     def _expected_schema(cls, operation):
-        """
-        Given a Swagger operation, return the schema of the expected body.
+        """Given a Swagger operation, return the schema of the expected body.
         This specifies the structure of the HTTP response body that will
         be served in response to a request mapping to this operation.
         """
@@ -93,16 +78,14 @@ class Application(object):
 
     @classmethod
     def _headers(cls):
-        """
-        Return a list of ('Header-Name', 'Header-Value') tuples,
+        """Return a list of ('Header-Name', 'Header-Value') tuples,
         which should be added as HTTP headers to every response.
         """
         return []
 
     @classmethod
     def _build_response(cls, req, return_value_iter, headers=None):
-        """
-        Build an HTTP response to the given request, with response body
+        """Build an HTTP response to the given request, with response body
         containing the data output by the given iterator.
         Tailor the response to the datatypes specified by Swagger, if any.
         """
@@ -123,9 +106,7 @@ class Application(object):
         status = cls._expected_status(req, operation)
         if not headers:
             headers = []
-        """
-        TODO: XML response support, depending on content negotiation.
-        """
+        # TODO(sjjf): XML response support, depending on content negotiation.
         headers.append(('Content-Type', 'application/json'))
         for tup in cls._headers():
             headers.append(tup)
@@ -156,8 +137,7 @@ class Application(object):
 
     @classmethod
     def _allowed_methods(cls, spec, path):
-        """
-        Which HTTP methods are allowed by the specification?
+        """Which HTTP methods are allowed by the specification?
         An OPTIONS method is permitted whether or not the specification
         says so, since we synthesise those.
         """
@@ -179,8 +159,7 @@ class Application(object):
 
     @classmethod
     def _options_response(cls, req):
-        """
-        Respond to OPTIONS requests meaningfully,
+        """Respond to OPTIONS requests meaningfully,
         implementing HATEOAS using the information in the Swagger catalogs.
         """
         swagger = req.environ['swagger']
@@ -198,16 +177,14 @@ class Application(object):
         return cls._build_response(req, result, headers)
 
     def _check_auth(self, req):
-        """
-        Hook for subclasses to override to implement authentication
+        """Hook for subclasses to override to implement authentication
         and/or authorisation. Allows everything by default.
         """
         return True
 
     @webob.dec.wsgify
     def __call__(self, req_dict):
-        """
-        Match the given request in the Swagger specification.
+        """Match the given request in the Swagger specification.
         Requires WSGI environment information from either SwaggerMapper
         or SwaggerMiddleware.
 
@@ -217,8 +194,8 @@ class Application(object):
         - For a request that doesn't map to an operationId in the schema,
           or maps to something not defined in Python, or maps to a private
           method whose name begins with an underscore, an HTTP error
-        - The result of calling self.operation_<operationId>, which is expected to
-          return a ( body, headers ) tuple.
+        - The result of calling self.operation_<operationId>, which is
+          expected to return a ( body, headers ) tuple.
         """
         req = Request(req_dict.environ)
         if "options" == req.environ['REQUEST_METHOD'].lower():
@@ -234,7 +211,7 @@ class Application(object):
             if method_params:
                 method_name = method_params['method']
             else:
-                # TODO: Include a link to the schema
+                # TODO(sjjf): Include a link to the schema
                 return webob.exc.HTTPNotFound()
         elif 'swagger' in req.environ:
             swagger = req.environ['swagger']
@@ -244,7 +221,7 @@ class Application(object):
             # If no Swagger path matched, 404 Not Found
             if path is None:
                 logging.warning("No path matched requested URL")
-                # TODO: Include a link to the schema
+                # TODO(sjjf): Include a link to the schema
                 return webob.exc.HTTPNotFound()
             # If Swagger path matched, but no operation matched the HTTP
             # method, HTTP Method Not Allowed
@@ -257,7 +234,7 @@ class Application(object):
                 headers = []
                 methods = self._allowed_methods(swagger, path)
                 headers.append(('Allow', ','.join(methods)))
-                # TODO: Include a link to the schema
+                # TODO(sjjf): Include a link to the schema
                 return webob.exc.HTTPMethodNotAllowed(headers=headers)
             if 'operationId' not in operation:
                 # This condition is also checked at API spec load time
@@ -269,7 +246,7 @@ class Application(object):
                 "Neither wsgiorg.routing_args nor swagger in environment"
             )
             logging.debug(req.environ)
-            # TODO: Include a link to the schema
+            # TODO(sjjf): Include a link to the schema
             return webob.exc.HTTPNotFound()
         if method_name.startswith('_'):
             # Attempt to call a private method

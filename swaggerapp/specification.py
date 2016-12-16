@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
-"""
-Represents a parsed Swagger API specification.
+"""Represents a parsed Swagger API specification.
 """
 
 import json
@@ -9,9 +8,7 @@ import logging
 
 
 class SwaggerSpecification(object):
-
-    """
-    Represents a parsed Swagger API specification.
+    """Represents a parsed Swagger API specification.
     """
 
     # The Swagger specification v2.0 mandates use of only these methods
@@ -23,8 +20,7 @@ class SwaggerSpecification(object):
 
     @classmethod
     def _validate_spec(cls, spec):
-        """
-        Validate this Swagger specification.
+        """Validate this Swagger specification.
         Each operation must have an operationId,
         since we use that to determine the Python method to call.
         In past versions of Swagger, this attribute was required,
@@ -53,8 +49,7 @@ class SwaggerSpecification(object):
                             )
 
     def _resolve_ref(self, ref):
-        """
-        Given a JSON reference, resolve it within the spec.
+        """Given a JSON reference, resolve it within the spec.
         This must recurse, as the referent of a JSON reference
         may itself be a JSON reference.
         """
@@ -72,8 +67,7 @@ class SwaggerSpecification(object):
         return spec
 
     def resolve_refs(self, schema):
-        """
-        Given a schema or a JSON reference to a schema, resolve it within
+        """Given a schema or a JSON reference to a schema, resolve it within
         the specification, yielding the schema referent.
         This must recurse, as the referent of a JSON reference
         may itself be a JSON reference.
@@ -86,8 +80,7 @@ class SwaggerSpecification(object):
 
     @classmethod
     def _path_matches(cls, pattern, url):
-        """
-        Compare the given URL against the given URL pattern.
+        """Compare the given URL against the given URL pattern.
         Return a two-element tuple, where in the first element
         if True if the URL matches the pattern, or false otherwise,
         and the second element is a dict of components of the URL
@@ -134,22 +127,19 @@ class SwaggerSpecification(object):
         return (True, path_parameters)
 
     def _base_path(self):
-        """
-        Return the base path (if any) defined in this specification.
+        """Return the base path (if any) defined in this specification.
         """
         if 'basePath' in self.spec:
             return self.spec['basePath']
         return ''
 
     def _paths(self):
-        """
-        Return a list of the paths defined in this specification.
+        """Return a list of the paths defined in this specification.
         """
         return self.spec['paths'].items()
 
     def find_path(self, url):
-        """
-        Find a path in this specification which matches the given URL.
+        """Find a path in this specification which matches the given URL.
         Return that path if it exists, or a tuple of Nones if it does not.
         """
         base_path = self._base_path()
@@ -164,14 +154,14 @@ class SwaggerSpecification(object):
 
     @classmethod
     def find_operation(cls, pathdef, request_method):
-        """
-        Given a path definition and a request method, return the matching
+        """Given a path definition and a request method, return the matching
         operation, or None if no operation matches.
         """
         request_method = request_method.lower()
         if request_method in pathdef:
             return pathdef[request_method]
         return None
+
 
 if __name__ == '__main__':
     SWAGGER_FILES = 'conf/swagger_versions.json conf/swagger_apiv1.json'
@@ -180,4 +170,4 @@ if __name__ == '__main__':
             json.loads(open(filename).read())
         ) for filename in SWAGGER_FILES.split()
     ]
-    print SPECS
+    print(SPECS)

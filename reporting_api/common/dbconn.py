@@ -7,13 +7,11 @@ from mysql.connector import InterfaceError
 
 
 class DBConnection(object):
-    """
-    Represents a connection to an RDBMS.
+    """Represents a connection to an RDBMS.
     """
 
     def __init__(self, **kwargs):
-        """
-        MySQL stores TIMESTAMP values as UTC, but automatically converts them
+        """MySQL stores TIMESTAMP values as UTC, but automatically converts them
         to/from the 'current time zone' on output/input (respectively).
         By default, the 'current time zone' is the server's time zone,
         which is unknown to the client. Thus this is silent data corruption.
@@ -25,20 +23,17 @@ class DBConnection(object):
         self.conn = mysql.connector.connect(**kwargs)
 
     def _before_db(self):
-        """
-        MySQL-specific: attempt to reconnect if our connection has timed out
+        """MySQL-specific: attempt to reconnect if our connection has timed out
         """
         try:
             self.conn.ping(True)
         except InterfaceError:
-            """
-            Probably just a stale connection.
+            """ Probably just a stale connection.
             If something worse has gone wrong, we will see it soon anyway.
             """
 
     def execute(self, query, return_dictionaries=True, bind_values=None):
-        """
-        Execute the given query with the given values for placeholders.
+        """Execute the given query with the given values for placeholders.
         If return_dictionaries is true, each row is a dictionary;
         if it is false, each row is a list of column values.
         In either case, a resultset is a list of rows.
@@ -54,8 +49,7 @@ class DBConnection(object):
         return cursor
 
     def callproc(self, procname, return_dictionaries=True, args=()):
-        """
-        Execute the given-named stored procedure with the given arguments.
+        """Execute the given-named stored procedure with the given arguments.
         If return_dictionaries is true, each row is a dictionary;
         if it is false, each row is a list of column values.
         In either case, a resultset is a list of rows.
@@ -67,8 +61,7 @@ class DBConnection(object):
         return cursor
 
     def escape_identifier(self, identifier):
-        """
-        Escape the given identifier, so that it will not be misinterpreted if
+        """Escape the given identifier, so that it will not be misinterpreted if
         it contains characters that are special in the dialect of SQL
         being spoken on this database connection.
         Such escaping is necessary when placeholders cannot be used.
@@ -76,23 +69,15 @@ class DBConnection(object):
         return self.conn.converter.escape(identifier)
 
 
-# Pylint warns that the following class has too few public methods.
-# The class has the sole public method that it is intended to have,
-# so the following comment disables the warning.
-# pylint: disable=R0903
-
 class CursorIter(object):
-
-    """
-    Iterate over a cursor's emitted rows.
+    """Iterate over a cursor's emitted rows.
     """
 
     def __init__(self, cursor):
         self.cursor = cursor
 
     def next(self):
-        """
-        Return the next row yielded by this cursor.
+        """Return the next row yielded by this cursor.
         Raise StopIteration if the cursor is exhausted,
         ie all of its rows have already been read.
         """
@@ -103,9 +88,7 @@ class CursorIter(object):
 
 
 class CursorSliceIter(CursorIter):
-
-    """
-    Iterate over a slice of a cursor's emitted rows,
+    """Iterate over a slice of a cursor's emitted rows,
     so that the n'th column of each row is emitted.
     """
 
@@ -114,8 +97,7 @@ class CursorSliceIter(CursorIter):
         self.index = index
 
     def next(self):
-        """
-        Return one column of the next row yielded by this cursor.
+        """Return one column of the next row yielded by this cursor.
         Raise StopIteration if the cursor is exhausted,
         ie all of its rows have already been read.
         """
@@ -123,18 +105,8 @@ class CursorSliceIter(CursorIter):
         return row[self.index]
 
 
-# Pylint warns that the following class has too few public methods.
-# It is not intended to have many (or even any) public methods,
-# so this is not a problem, so the following comment silences the warning.
-# Apparently, pylint assumes (falsely) that a class without public methods
-# is being abused as a mere holder of data - but the below class is being
-# used as a holder of code, as is common accepted practice in OOP.
-# pylint: disable=R0903
-
 class ResultSet(object):
-
-    """
-    An iterable SQL result set.
+    """An iterable SQL result set.
     """
 
     def __init__(self, cursor):
@@ -144,18 +116,8 @@ class ResultSet(object):
         return CursorIter(self.cursor)
 
 
-# Pylint warns that the following classes have too few public methods.
-# They are not intended to have many (or even any) public methods,
-# so this is not a problem, so the following comment silences the warning.
-# Apparently, pylint assumes (falsely) that a class without public methods
-# is being abused as a mere holder of data - but the below classes are being
-# used as holders of code, as is common accepted practice in OOP.
-# pylint: disable=R0903
-
 class ResultSetSlice(ResultSet):
-
-    """
-    An iterable slice through an SQL result set.
+    """An iterable slice through an SQL result set.
     """
 
     def __init__(self, cursor, index):

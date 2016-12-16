@@ -6,21 +6,19 @@ URL router middleware.
 
 import json
 import os
-from routes.middleware import RoutesMiddleware
 from routes import Mapper
+from routes.middleware import RoutesMiddleware
 from swaggerapp.specification import SwaggerSpecification
 
 
 class SwaggerMapper(Mapper):
-    """
-    A WSGI URL router middleware that automatically configures itself
+    """A WSGI URL router middleware that automatically configures itself
     using a set of Swagger JSON API specifications.
     """
 
     def __init__(self, swagger_specs):
         super(SwaggerMapper, self).__init__()
-        """
-        To debug this Mapper:
+        """To debug this Mapper:
         logging.basicConfig()
         logger = logging.getLogger('routes.middleware')
         logger.setLevel(logging.DEBUG)
@@ -29,8 +27,7 @@ class SwaggerMapper(Mapper):
             self._read_spec(spec)
 
     def _read_spec(self, swagger_spec):
-        """
-        FIXME: This breaks matching for apps whose Paste configuration
+        """FIXME: This breaks matching for apps whose Paste configuration
         has them served from a URL other than the root '/'.
         if 'basePath' in swagger_spec:
             base_path = swagger_spec['basePath']
@@ -39,8 +36,7 @@ class SwaggerMapper(Mapper):
         """
         base_path = ''
         for path, pathdef in swagger_spec['paths'].items():
-            """
-            NOTE: Use of mapper.collection rather than mapper.connect below
+            """NOTE: Use of mapper.collection rather than mapper.connect below
             would make the controller implicit, rather than using
             Swagger schema operationId attributes.
             However, doing so would impose additional structure on the API,
@@ -66,8 +62,7 @@ class SwaggerMapper(Mapper):
                         "No operationId attribute for method '%s' in path '%s'"
                         % (method, path)
                     )
-            """
-            TODO: Synthesise an OPTIONS response
+            """TODO: Synthesise an OPTIONS response
             for suffix in [ '', '/' ]:
                 super(SwaggerMapper, self).connect(
                     'OPTIONS_' +
@@ -88,12 +83,10 @@ class SwaggerMapper(Mapper):
 
 
 def factory(config, **settings):
-    """
-    Function that returns a WSGI filter factory function.
+    """Function that returns a WSGI filter factory function.
     """
     def filter(app):
-        """
-        WSGI filter factory function.
+        """WSGI filter factory function.
         """
         config.update(settings)
         swagger_files = config.get('swagger_json')
@@ -107,6 +100,7 @@ def factory(config, **settings):
         return RoutesMiddleware(app, mapper)
     return filter
 
+
 if __name__ == '__main__':
     REALFILE = os.path.realpath(__file__)
     REALDIR = os.path.dirname(REALFILE)
@@ -118,4 +112,4 @@ if __name__ == '__main__':
         for specfile in SPECFILES
     ]
     MAPPER = SwaggerMapper(SPECS)
-    print MAPPER
+    print(MAPPER)

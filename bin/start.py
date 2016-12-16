@@ -1,13 +1,14 @@
 #!/usr/bin/python
 
-"""
-Start the Reporting API application using Paste Deploy.
+"""Start the Reporting API application using Paste Deploy.
 """
 
-import sys
-import os
-from paste.deploy import loadapp, loadserver
 import logging
+import os
+from paste.deploy import loadapp
+from paste.deploy import loadserver
+import sys
+
 
 if __name__ == '__main__':
     logging.basicConfig(

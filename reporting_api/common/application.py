@@ -3,6 +3,7 @@ A WSGI application configured by an INI file,
 which responds to requests according to a Swagger API specification.
 """
 
+import abc
 import logging
 import six
 from swaggerapp.encoder import JSONStreamingEncoder
@@ -14,7 +15,7 @@ from webob import Request
 from webob import Response
 
 
-@six.add_metaclass
+@six.add_metaclass(abc.ABCMeta)
 class Application(object):
     """Abstract base class for a WSGI application configured by an INI file
     which responds to requests according to a Swagger API specification.

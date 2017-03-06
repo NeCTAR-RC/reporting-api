@@ -2,12 +2,12 @@
 by a WSGI application.
 """
 
-from abc import abstractmethod
+import abc
 from reporting_api.common.authapp import KeystoneApplication
 import six
 
 
-@six.add_metaclass
+@six.add_metaclass(abc.ABCMeta)
 class APIVersion(KeystoneApplication):
     """Abstract base class representing a particular version of an API spoken
     by a WSGI application.
@@ -16,7 +16,7 @@ class APIVersion(KeystoneApplication):
     version_classes = []
 
     @classmethod
-    @abstractmethod
+    @abc.abstractmethod
     def _version_identifier(cls):
         """Return a string uniquely identifying this API version.
         """

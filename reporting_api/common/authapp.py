@@ -2,13 +2,16 @@
 An Application which uses Keystone for authorisation using RBAC.
 """
 
+import abc
 import ConfigParser
-from keystonemiddleware.auth_token import filter_factory as auth_filter_factory
-from reporting_api.common.application import Application
 import six
 
+from keystonemiddleware.auth_token import filter_factory as auth_filter_factory
 
-@six.add_metaclass
+from reporting_api.common.application import Application
+
+
+@six.add_metaclass(abc.ABCMeta)
 class KeystoneApplication(Application):
     """An Application which uses Keystone for authorisation using RBAC.
     """

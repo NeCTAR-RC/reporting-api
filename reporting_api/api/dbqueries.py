@@ -71,7 +71,7 @@ class DBQueries(object):
         FIXME: Remove this knowledge about the underlying schema.
         """
         # In this query, table names are literals, so can be parameters
-        query = """SELECT %(last_update)s FROM %(table)s WHERE %(column)s"
+        query = """SELECT %(last_update)s FROM %(table)s WHERE %(column)s
                    IN %(table_names)s""" % dict(
                 last_update=dbconn.escape_identifier(
                     cls.METADATA_LAST_UPDATE_COLUMN),

@@ -1,0 +1,11 @@
+[Unit]
+Description=OpenStack Reporting API Service
+After=network.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/default/reporting-api
+ExecStart=/usr/bin/reporting-api $DAEMON_ARGS
+
+[Install]
+WantedBy=multi-user.target
